@@ -1,0 +1,481 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="description" content="ScanV — alat edukasi cek keamanan HP Android: checklist malware, hash SHA-256 file, cek VirusTotal. Jujur: tidak bisa mengakses file HP.">
+    <meta name="theme-color" content="#0f1115">
+    <meta property="og:title" content="ScanV — Cek Keamanan HP Android">
+    <meta property="og:description" content="Checklist malware, hash file & cek VirusTotal. Dibuat oleh SANUSI — Mahasiswa AMIK Serang.">
+    <meta property="og:type" content="website">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>ScanV — Cek Keamanan HP Android</title>
+    <style>
+        :root {
+            --bg: #0f1115;
+            --card: #1a1d23;
+            --text: #e2e8f0;
+            --text-muted: #94a3b8;
+            --primary: #3b82f6;
+            --danger: #ef4444;
+            --warning: #f59e0b;
+            --success: #22c55e;
+            --border: #2d3748;
+        }
+        * { box-sizing: border-box; margin: 0; padding: 0; }
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+            background-color: var(--bg);
+            color: var(--text);
+            line-height: 1.6;
+            padding: 20px;
+        }
+        .container { max-width: 720px; margin: 0 auto; }
+        .section { margin: 32px 0; background: var(--card); border-radius: 12px; padding: 24px; border: 1px solid var(--border); }
+        h1 { font-size: 2rem; margin-bottom: 0.5rem; }
+        h2 { font-size: 1.5rem; margin-bottom: 1rem; color: var(--primary); border-bottom: 1px solid var(--border); padding-bottom: 0.5rem; }
+        h3 { font-size: 1.1rem; margin: 1rem 0 0.5rem; }
+        p { color: var(--text-muted); margin-bottom: 1rem; }
+        .hero { text-align: center; padding: 40px 20px; background: linear-gradient(180deg, #1a1d23 0%, #0f1115 100%); border-radius: 16px; margin-bottom: 24px; }
+        .hero h1 { color: var(--text); margin-bottom: 12px; }
+        .sub { font-size: 1rem; color: #a0aec0; max-width: 500px; margin: 0 auto; }
+        .banner {
+            background: #fffdf0; color: #744210;
+            padding: 16px; border-radius: 12px; text-align: center; font-weight: 600;
+            border: 2px solid #f6e05e; margin-bottom: 32px;
+        }
+        .checklist-item { margin: 16px 0; padding: 12px; background: #2d374820; border-radius: 8px; }
+        .checklist-item input { margin-right: 10px; accent-color: var(--primary); width: 20px; height: 20px; cursor: pointer; }
+        .checklist-item label { cursor: pointer; display: flex; flex-direction: column; }
+        .checklist-label { font-weight: 500; font-size: 0.95rem; }
+        .checklist-desc { font-size: 0.85rem; color: var(--text-muted); margin-top: 4px; }
+        .btn {
+            display: block; width: 100%; padding: 14px; border: none; border-radius: 8px;
+            font-size: 1rem; font-weight: 600; cursor: pointer; transition: 0.2s;
+            margin-top: 20px; color: white; background: var(--primary);
+        }
+        .btn:hover { background: #2563eb; transform: translateY(-1px); box-shadow: 0 4px 12px rgba(59,130,246,0.3); }
+        .btn:active { transform: translateY(0); }
+        .btn-warning { background: var(--warning); color: #000; }
+        .btn-warning:hover { background: #d97706; }
+        .btn-outline { background: transparent; border: 1px solid var(--border); color: var(--text); margin-top: 10px; }
+        .btn-outline:hover { background: #2d3748; border-color: var(--text-muted); }
+        .result-box { margin-top: 24px; padding: 24px; border-radius: 12px; text-align: center; border: 2px solid; }
+        .score-badge {
+            display: inline-block; font-size: 2rem; font-weight: 800; padding: 8px 24px; border-radius: 50px;
+            background: #000; margin: 12px 0; border: 2px solid var(--border);
+        }
+        .status-safe { border-color: var(--success); background: rgba(34,197,94,0.1); }
+        .status-warn { border-color: var(--warning); background: rgba(245,158,11,0.1); }
+        .status-risk { border-color: #f97316; background: rgba(249,115,22,0.1); }
+        .status-infected { border-color: var(--danger); background: rgba(239,68,68,0.1); color: var(--danger); }
+        .file-input { width: 100%; margin-bottom: 16px; color: var(--text); }
+        .file-info { background: #0f1115; padding: 16px; border-radius: 8px; margin: 12px 0; border: 1px dashed var(--border); }
+        .hash-display { font-family: monospace; word-break: break-all; font-size: 0.9rem; color: var(--primary); background: #1a1d23; padding: 8px; border-radius: 4px; }
+        .vt-section { background: #1e293b; }
+        .input-group { display: flex; flex-direction: column; gap: 8px; }
+        .api-key { font-size: 0.9rem; color: var(--text-muted); }
+        .api-key a { color: var(--primary); text-decoration: none; }
+        .api-key a:hover { text-decoration: underline; }
+        .result-json { background: #0d1117; padding: 16px; border-radius: 8px; font-family: monospace; white-space: pre-wrap; font-size: 0.9rem; overflow-x: auto; border: 1px solid var(--border); margin-top: 16px; color: #a5d6ff; }
+        .manual-check { margin-top: 12px; font-size: 0.9rem; color: var(--warning); }
+        .manual-check a { color: var(--primary); text-decoration: none; }
+        .manual-check a:hover { text-decoration: underline; }
+        .disclaimer-text { font-size: 0.85rem; color: var(--text-muted); text-align: center; margin-top: 32px; border-top: 1px solid var(--border); padding-top: 20px; }
+        .footer { text-align: center; margin-top: 40px; }
+        .footer a { color: var(--primary); text-decoration: none; font-weight: 600; }
+        .hidden { display: none; }
+        .tag { display: inline-block; padding: 2px 8px; border-radius: 4px; font-size: 0.8rem; margin-right: 6px; background: #334155; color: #e2e8f0; }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <header class="hero">
+            <div style="font-size: 4rem; margin-bottom: 16px;">🛡️</div>
+            <h1>ScanV — Cek Keamanan HP Android</h1>
+            <p class="sub">Bantu periksa HP Android dari malware yang sembunyi. Jujur: situs ini TIDAK bisa memindai isi HP-mu secara langsung.</p>
+        </header>
+
+        <div class="banner">
+            ⚠️ Alat ini tidak mengakses file di HP. Browser tidak bisa memindai sistem Android. Gunakan panduan & cek file di bawah dengan bijak.
+        </div>
+
+        <section id="section-a" class="section">
+            <h2>🔍 Periksa HP Sekarang</h2>
+            <p>Pilih yang sesuai dengan kondisi HP-mu saat ini. Semakin banyak checklist, semakin besar kemungkinan adanya ancaman.</p>
+            <div id="checklist-container">
+                <!-- Checklist items will be generated by JS -->
+            </div>
+            <button class="btn btn-warning" onclick="hitungHasil()">Hitung Hasil</button>
+            <div id="hasil-box" class="result-box hidden">
+                <div class="score-badge" id="skor-display">0/12</div>
+                <h3 id="status-display" style="font-size: 1.5rem; margin-bottom: 10px;">Status</h3>
+                <p id="rekomendasi-display"></p>
+                <button class="btn" onclick="window.scrollTo({top: document.getElementById('section-b').offsetTop - 80, behavior: 'smooth'})">Cek File Aneh</button>
+            </div>
+        </section>
+
+        <section id="section-b" class="section">
+            <h2>🩺 Cek File (APK / ZIP / dll)</h2>
+            <p>Pilih satu file mencurigakan dari HP untuk dianalisis hash-nya.</p>
+            
+            <input type="file" id="file-input" class="file-input">
+            <div id="file-info-display" class="file-info hidden">
+                <div><strong>Nama:</strong> <span id="file-name">-</span></div>
+                <div><strong>Ukuran:</strong> <span id="file-size">-</span></div>
+                <div><strong>SHA-256:</strong></div>
+                <div id="file-sha256" class="hash-display">Menunggu file...</div>
+            </div>
+
+            <button class="btn btn-outline" onclick="cekHashBawaan()">Cek ke File Uji EICAR</button>
+            <div id="hash-check-result" style="margin-top: 12px; padding: 12px; border-radius: 8px; background: #0f1115; border: 1px solid var(--border); display: none;">
+                <div id="hash-match-status" style="font-weight: bold; margin-bottom: 6px;"></div>
+                <div id="hash-details" style="font-size: 0.9rem; color: var(--text-muted);"></div>
+            </div>
+
+            <h3 style="margin-top: 24px;">🔍 Cek Manual Hash</h3>
+            <div class="input-group">
+                <label>Tempel hash (SHA-256 atau MD5) atau nama file untuk pencocokan database lokal sederhana:</label>
+                <input type="text" id="manual-hash-input" placeholder="Contoh: 275a021bbfb6489e54d471899f7db9d1663fc695ec2fe2a2c4538aabf651fd0f" style="padding: 12px; border-radius: 8px; border: 1px solid var(--border); background: #0f1115; color: white; width: 100%;">
+            </div>
+            <button class="btn" onclick="cekHashManual()">Cek Hash</button>
+            <div id="manual-check-result" style="margin-top: 12px; padding: 12px; border-radius: 8px; background: #0f1115; border: 1px solid var(--border); display: none;">
+                <div id="manual-check-status" style="font-weight: bold; margin-bottom: 6px;"></div>
+                <div id="manual-check-desc" style="font-size: 0.9rem; color: var(--text-muted);"></div>
+            </div>
+            <p style="margin-top: 16px; font-size: 0.9rem;">Daftar hash bawaan sangat terbatas. Untuk cek menyeluruh, gunakan VirusTotal di bawah atau antivirus.</p>
+        </section>
+
+        <section id="section-c" class="section vt-section">
+            <h2>🔬 Cek Hash di VirusTotal (opsional)</h2>
+            <p>Untuk deteksi yang lebih akurat, gunakan VirusTotal. Input API key milikmu sendiri (tidak disimpan di server mana pun).</p>
+            <div class="input-group">
+                <label>VirusTotal API Key</label>
+                <input type="password" id="vt-api-key" placeholder="Paste API key kamu di sini" style="padding: 12px; border-radius: 8px; border: 1px solid var(--border); background: #0f1115; color: white; width: 100%;">
+                <p class="api-key">Butuh API Key? <a href="https://www.virustotal.com/gui/join-us" target="_blank" rel="noopener">Daftar gratis di VirusTotal</a> (perlu akun).</p>
+                <p class="api-key">Catatan: Jangan pernah berikan API key ke siapa pun. Input ini hanya diproses di browser kamu.</p>
+            </div>
+            <div class="input-group" style="margin-top: 16px;">
+                <label>Hash File (SHA-256)</label>
+                <input type="text" id="vt-hash-input" placeholder="Contoh: 275a021bbfb6489e54d471899f7db9d1663fc695ec2fe2a2c4538aabf651fd0f" style="padding: 12px; border-radius: 8px; border: 1px solid var(--border); background: #0f1115; color: white; width: 100%;">
+            </div>
+            <button class="btn" onclick="cekVirusTotal()">Cek Sekarang</button>
+            <div id="vt-result" class="result-json hidden"></div>
+            <div id="vt-error" class="manual-check hidden">
+                <p>Gagal menghubungi VirusTotal. Mungkin masalah CORS atau API Key tidak valid.</p>
+                <p>Cara manual: <a href="https://www.virustotal.com/" target="_blank">Buka VirusTotal</a> → Pilih "Scan URL" → Tempel hash SHA-256 file yang ingin dicheck.</p>
+            </div>
+        </section>
+
+        <section id="section-d" class="section">
+            <h2>📖 Cara Kerja & Info Jujur</h2>
+            <h3>Kenapa web tool TIDAK bisa pindai HP?</h3>
+            <p>Browser modern memiliki sandbox (isolasi keamanan) yang melarang akses ke sistem file HP atau aplikasi yang terinstall. Itu untuk melindungi privasi dan keamanan kamu dari situs web jahat lainnya. Jadi, tidak ada cara untuk web ini "membaca" aplikasi HP kamu secara langsung.</p>
+
+            <h3>Di mana malware HP biasanya sembunyi?</h3>
+            <p>Malware Android biasanya menyamar sebagai aplikasi biasa. Mereka sering mengambil alih:</p>
+            <ul style="margin-left: 20px; margin-bottom: 16px;">
+                <li><strong>Aplikasi mencurigakan:</strong> yang kamu tidak install tapi muncul di launcher.</li>
+                <li><strong>Izin Aksesibilitas:</strong> aplikasi "layanan" yang aktif tapi tidak punya fitur bantu apa pun.</li>
+                <li><strong>Izin Administrator Perangkat:</strong> aplikasi yang mengunci HP dan tidak bisa di-uninstall biasa.</li>
+                <li><strong>APK dari luar Play Store:</strong> instalasi dari sumber tidak dikenal (XDA Developers, forum, chat) adalah sumber utama.</li>
+            </ul>
+
+            <h3>Alat beneran yang disarankan</h3>
+            <p>Jika HP kamu terasa tidak wajar, gunakan alat keamanan asli:</p>
+            <ul style="margin-left: 20px; margin-bottom: 16px;">
+                <li><strong>Google Play Protect:</strong> bawaan Google, cek di Play Store → Menu → Play Protect.</li>
+                <li><strong>Malwarebytes:</strong> kuat untuk deteksi iklan berbahaya.</li>
+                <li><strong>Kaspersky & AVG:</strong> antivirus tradisional yang andal.</li>
+                <li><strong>Reset Pabrik:</strong> solusi terakhir jika terlalu parah (backup data dulu).</li>
+            </ul>
+
+            <h3>Cara mengaktifkan Play Protect</h3>
+            <ol style="margin-left: 20px; margin-bottom: 16px;">
+                <li>Buka aplikasi <strong>Play Store</strong>.</li>
+                <li>Klik menu titik tiga (kanan atas) atau icon <strong>Profile</strong> di pojok kanan atas.</li>
+                <li>Pilih <strong>Play Protect</strong>.</li>
+                <li>Pastikan fitur "Scan aplikasi berbahaya" dalam keadaan <strong>ON</strong> (berwarna hijau).</li>
+            </ol>
+            <p>Play Protect akan otomatis memindai aplikasi yang kamu install dan memberi peringatan jika ada yang mencurigakan.</p>
+        </section>
+
+        <footer class="footer">
+            <p style="font-size: 0.9rem;">Build by SANUSI — Mahasiswa AMIK Serang</p>
+            <p><a href="https://sfafa231.github.io/portofolio/" target="_blank" rel="noopener">Lihat Portofolio</a></p>
+            <div class="disclaimer-text">
+                <p><strong>DISCLAIMER PENUH:</strong> ScanV adalah alat edukasi. Hasil pemeriksaan checklist bersifat indicatif, bukan diagnostic medis digital. Situs ini tidak mengakses data pribadi HP, tidak menyimpan API key, dan tidak menjamin 100% akurasi deteksi. Gunakan dengan bijak dan selalu backup data penting.</p>
+            </div>
+        </footer>
+    </div>
+
+    <script>
+        const checks = [
+            { id: 1, text: "Aplikasi yang tidak kamu kenal terpasang sendiri", desc: "Ada aplikasi aneh yang muncul di launcher atau daftar tanpa kamu install." },
+            { id: 2, text: "Iklan pop-up muncul di luar aplikasi / layar penuh", desc: "Banner iklan atau jendela pop-up yang sulit ditutup saat menggunakan aplikasi lain." },
+            { id: 3, text: "Izin Administrator Perangkat (Device Admin) diambil alih aplikasi aneh", desc: "Aplikasi mencurigakan muncul di Pengaturan → Keamanan → Administrator Perangkat." },
+            { id: 4, text: "Ada aplikasi aneh di 'Aksesibilitas' (Accessibility) yang aktif", desc: "Layanan 'Tutor', 'Pencatat', atau 'Service' tidak dikenal yang hidup terus menerus." },
+            { id: 5, text: "Baterai cepat habis & HP cepat panas tanpa dipakai", desc: "Daya tahan baterai menurun drastis dan HP terasa hangat saat diletakkan." },
+            { id: 6, text: "Data internet cepat habis / ada aplikasi kirim data diam-diam", desc: "Kuota data boros meskipun tidak streaming/download. Cek di Pengaturan → Kuota Data." },
+            { id: 7, text: "Ter-lock oleh layar 'Ransomware/POLICE' yang minta bayar", desc: "Layar biru/merah menahan HP dan meminta transfer uang untuk membuka kunci." },
+            { id: 8, text: "Loading lama, banyak popup 'update aplikasi' yang mencurigangkan", desc: "Browser atau aplikasi lelet, muncul notifikasi 'Flash Player need update' palsu." },
+            { id: 9, text: "Ada SMS/WA terkirim sendiri ke kontak", desc: "Kontak melapor menerima pesan aneh atau link jahat dari nomor kamu." },
+            { id: 10, text: "Aplikasi minta izin aneh (baca kontak, SMS, lokasi) padahal tidak perlu", desc: "Kalkulator atau senter minta akses ke SMS atau Lokasi (ini tanda bahaya besar)." },
+            { id: 11, text: "Fitur 'Instal dari sumber tidak dikenal' dinyalakan", desc: "Sumber tidak dikenal aktif untuk beberapa aplikasi (sering di reset otomatis oleh malware)." },
+            { id: 12, text: "Play Protect dianggap tidak aktif / dilewati", desc: "Play Store memberitahukan risiko keamanan atau fitur scan mati sendiri." }
+        ];
+
+        const eicarHash = {
+            md5: "44d88612fea8a8f36de82e1278abb02f",
+            sha1: "3395856ce81f2b7382dee72602f798b642f14140",
+            sha256: "275a021bbfb6489e54d471899f7db9d1663fc695ec2fe2a2c4538aabf651fd0f"
+        };
+
+        const suspiciousDatabase = [
+            { hash: eicarHash.sha256, name: "EICAR Test File", desc: "File uji standar antivirus. Tidak berbahaya, tapi menandakan virus scanner berfungsi." },
+            { hash: "44d88612fea8a8f36de82e1278abb02f", name: "EICAR Test File (MD5)", desc: "Versi hash MD5 dari file uji standar antivirus." }
+        ];
+
+        const checklistContainer = document.getElementById('checklist-container');
+        const fileInput = document.getElementById('file-input');
+        const sha256Display = document.getElementById('file-sha256');
+        let lastFileHash = "";
+
+        function init() {
+            checks.forEach(check => {
+                const div = document.createElement('div');
+                div.className = 'checklist-item';
+                div.innerHTML = `
+                    <input type="checkbox" id="check-${check.id}" onchange="updateChecklist()">
+                    <label for="check-${check.id}">
+                        <span class="checklist-label">${check.text}</span>
+                        <span class="checklist-desc">${check.desc}</span>
+                    </label>
+                `;
+                checklistContainer.appendChild(div);
+            });
+        }
+
+        function updateChecklist() {
+            // Optional: Real-time update logic if needed later
+        }
+
+        function hitungHasil() {
+            let selectedCount = 0;
+            checks.forEach(check => {
+                const checkbox = document.getElementById(`check-${check.id}`);
+                if (checkbox && checkbox.checked) selectedCount++;
+            });
+
+            const hasilBox = document.getElementById('hasil-box');
+            const skorDisplay = document.getElementById('skor-display');
+            const statusDisplay = document.getElementById('status-display');
+            const rekomendasiDisplay = document.getElementById('rekomendasi-display');
+
+            hasilBox.classList.remove('hidden');
+            
+            skorDisplay.textContent = `${selectedCount}/${checks.length}`;
+            
+            let status = "";
+            let rekomendasi = "";
+            let statusClass = "";
+
+            if (selectedCount === 0) {
+                status = "Kemungkinan Aman";
+                rekomendasi = "HP kamu nampaknya tidak menunjukkan gejala jelas. Tetap waspada: jangan instal APK dari sumber tidak dikenal dan pastikan Play Protect aktif.";
+                statusClass = "status-safe";
+                statusDisplay.style.color = "var(--success)";
+            } else if (selectedCount <= 3) {
+                status = "Waspada";
+                rekomendasi = "Beberapa gejala ringan muncul. Periksa kembali aplikasi yang baru-baru ini diinstal. Copot aplikasi yang mencurigakan dan nonaktifkan izin Administrator/Accessibility yang tidak perlu.";
+                statusClass = "status-warn";
+                statusDisplay.style.color = "var(--warning)";
+            } else if (selectedCount <= 8) {
+                status = "Berisiko Tinggi";
+                rekomendasi = "Banyak gejala yang cocok dengan infeksi malware. Segera hapus aplikasi mencurigakan yang kamu identifikasi. Jangan klik link aneh. Backup data penting.";
+                statusClass = "status-risk";
+                statusDisplay.style.color = "#f97316";
+            } else {
+                status = "Terinfeksi Kemungkinan Besar";
+                rekomendasi = "Banyak gejala parah terdeteksi (kemungkinan besar ransomware atau trojan). Matikan data/WiFi untuk mencegah penyebaran. Reset pabrik adalah pilihan terbaik.";
+                statusClass = "status-infected";
+                statusDisplay.style.color = "var(--danger)";
+            }
+
+            hasilBox.className = `result-box ${statusClass}`;
+            statusDisplay.textContent = status;
+            rekomendasiDisplay.textContent = rekomendasi;
+
+            window.scrollTo({ top: hasilBox.offsetTop - 20, behavior: 'smooth' });
+        }
+
+        // File Hashing Logic
+        fileInput.addEventListener('change', async (e) => {
+            const file = e.target.files[0];
+            if (!file) return;
+
+            document.getElementById('file-info-display').classList.remove('hidden');
+            document.getElementById('file-name').textContent = file.name;
+            document.getElementById('file-size').textContent = formatBytes(file.size);
+            
+            sha256Display.textContent = "Menghitung hash...";
+
+            if (!window.crypto || !window.crypto.subtle) {
+                sha256Display.textContent = "Browser tidak mendukung WebCrypto — pakai Chrome/Edge terbaru.";
+                sha256Display.style.color = "var(--danger)";
+                return;
+            }
+
+            try {
+                const arrayBuffer = await file.arrayBuffer();
+                const hashBuffer = await window.crypto.subtle.digest("SHA-256", arrayBuffer);
+                const hashArray = Array.from(new Uint8Array(hashBuffer));
+                const hashHex = hashArray.map(b => b.toString(16).padStart(2, '0')).join('');
+                
+                lastFileHash = hashHex;
+                sha256Display.textContent = hashHex;
+                sha256Display.style.color = "var(--primary)";
+                
+                // Auto-isi kolom VirusTotal dengan hash yang baru dihitung
+                const vtInput = document.getElementById('vt-hash-input');
+                if (vtInput) vtInput.value = hashHex;
+                
+            } catch (error) {
+                console.error(error);
+                document.getElementById('file-sha256').textContent = "Gagal menghitung hash. File mungkin terlalu besar.";
+                document.getElementById('file-sha256').style.color = "var(--danger)";
+            }
+        });
+
+        function formatBytes(bytes, decimals = 2) {
+            if (!+bytes) return '0 Bytes';
+            const k = 1024;
+            const dm = decimals < 0 ? 0 : decimals;
+            const sizes = ['Bytes', 'KB', 'MB', 'GB', 'TB'];
+            const i = Math.floor(Math.log(bytes) / Math.log(k));
+            return `${parseFloat((bytes / Math.pow(k, i)).toFixed(dm))} ${sizes[i]}`;
+        }
+
+        function cekHashBawaan() {
+            const hash = (lastFileHash || document.getElementById('file-sha256').textContent).trim();
+            if (!/^[a-f0-9]{64}$/i.test(hash)) {
+                alert("Pilih file terlebih dahulu untuk cek hash-nya.");
+                return;
+            }
+            
+            const resultDiv = document.getElementById('hash-check-result');
+            const matchStatus = document.getElementById('hash-match-status');
+            const matchDetails = document.getElementById('hash-details');
+            
+            resultDiv.style.display = "block";
+            
+            // Case-insensitive check
+            const hashLower = hash.toLowerCase();
+            
+            if (hashLower === eicarHash.sha256) {
+                matchStatus.textContent = "⚠️ PERHATIAN: Hash cocok dengan file uji EICAR!";
+                matchStatus.style.color = "var(--warning)";
+                matchDetails.textContent = "Ini adalah file uji standar antivirus (EICAR). File ini TIDAK BERBAHAYA, tapi menunjukkan bahwa sistem keamanan atau tools deteksi bekerja dengan baik.";
+            } else {
+                matchStatus.textContent = "✅ Hash TIDAK cocok dengan file uji standar.";
+                matchStatus.style.color = "var(--success)";
+                matchDetails.textContent = "Hash file berbeda dengan file uji EICAR. Lanjutkan dengan VirusTotal untuk cek lebih lanjut.";
+            }
+        }
+
+        function cekHashManual() {
+            const input = document.getElementById('manual-hash-input');
+            const resultDiv = document.getElementById('manual-check-result');
+            const statusEl = document.getElementById('manual-check-status');
+            const descEl = document.getElementById('manual-check-desc');
+            
+            const hashInput = input.value.trim();
+            if (hashInput.length < 32) {
+                alert("Masukkan hash yang valid ( minimal 32 karakter untuk MD5/SHA-256).");
+                return;
+            }
+            
+            resultDiv.style.display = "block";
+            statusEl.textContent = "Mencocokkan database lokal...";
+            statusEl.style.color = "var(--text-muted)";
+            
+            let found = false;
+            for (const item of suspiciousDatabase) {
+                if (item.hash.toLowerCase() === hashInput.toLowerCase()) {
+                    found = true;
+                    statusEl.textContent = "⚠️ PERHATIAN: Hash cocok dengan database ancaman terdeteksi!";
+                    statusEl.style.color = "var(--danger)";
+                    descEl.textContent = `File ini dikenali sebagai: ${item.name}. ${item.desc}`;
+                    break;
+                }
+            }
+            
+            if (!found) {
+                statusEl.textContent = "✅ Hash tidak ditemukan dalam daftar hitam lokal.";
+                statusEl.style.color = "var(--success)";
+                descEl.textContent = "Hasil positif palsu (false positive) masih mungkin terjadi. Disarankan cek hash ini di VirusTotal untuk hasil lebih akurat.";
+            }
+        }
+
+        function escHtml(s) {
+            return String(s).replace(/[&<>"']/g, c => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" }[c]));
+        }
+
+        async function cekVirusTotal() {
+            const apiKey = document.getElementById('vt-api-key').value.trim();
+            const hash = document.getElementById('vt-hash-input').value.trim();
+            const resultDiv = document.getElementById('vt-result');
+            const errorDiv = document.getElementById('vt-error');
+
+            if (!apiKey) {
+                alert("Masukkan API Key VirusTotal terlebih dahulu.");
+                document.getElementById('vt-api-key').focus();
+                return;
+            }
+            if (!/^[a-f0-9]{32,64}$/i.test(hash)) {
+                alert("Masukkan hash yang valid (MD5 32 karakter / SHA-256 64 karakter).");
+                return;
+            }
+
+            errorDiv.classList.add('hidden');
+            resultDiv.classList.remove('hidden');
+            resultDiv.innerHTML = '<div class="manual-check">Menghubungi VirusTotal API… silakan tunggu.</div>';
+
+            try {
+                const response = await fetch(`https://www.virustotal.com/api/v3/files/${hash}`, {
+                    method: 'GET',
+                    headers: {
+                        'x-apikey': apiKey
+                    }
+                });
+
+                if (response.ok) {
+                    const data = await response.json();
+                    const stats = data.data.attributes.last_analysis_stats;
+                    
+                    let malCount = stats.malicious;
+                    let suspCount = stats.suspicious;
+                    
+                    let warningColor = "var(--success)";
+                    if (malCount > 0) warningColor = "var(--danger)";
+                    else if (suspCount > 0) warningColor = "var(--warning)";
+
+                    resultDiv.innerHTML = `
+                        <div style="color: ${warningColor}; font-weight: bold; margin-bottom: 10px;">Deteksi: ${malCount} bahaya, ${suspCount} mencurigakan, ${stats.undetected} tidak terdeteksi (dari ${stats.undetected + stats.malicious + stats.suspicious + (stats.harmless||0) + (stats.type_unsupported||0) + (stats.timeout||0) + (stats.confirmed_timeout||0) + (stats.failure||0)} engine)</div>
+                        <pre>${escHtml(JSON.stringify(stats, null, 2))}</pre>
+                        <a href="https://www.virustotal.com/gui/file/${encodeURIComponent(hash)}" target="_blank" rel="noopener" style="display: block; margin-top: 10px; color: var(--primary); text-decoration: none;">Lihat Detail Lengkap di VirusTotal</a>
+                    `;
+                } else {
+                    throw new Error(`API Error: ${response.status} ${response.statusText}`);
+                }
+            } catch (error) {
+                console.error(error);
+                resultDiv.classList.add('hidden');
+                errorDiv.classList.remove('hidden');
+            }
+        }
+
+        // Initialize
+        init();
+    </script>
+</body>
+</html>
